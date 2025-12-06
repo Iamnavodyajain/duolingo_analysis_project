@@ -1,0 +1,1686 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Duolingo‑Style Product Analytics — Portfolio Report</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* CSS Variables for consistent theming */
+    :root {
+      --bg-primary: #0b1220;
+      --bg-secondary: #071021;
+      --bg-tertiary: #0c1527;
+      --bg-card: rgba(11, 18, 32, 0.85);
+      --bg-overlay: rgba(15, 23, 42, 0.9);
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-heavy: rgba(255, 255, 255, 0.08);
+      
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+      
+      --accent-primary: #58CC02;
+      --accent-secondary: #06b6d4;
+      --accent-gradient: linear-gradient(135deg, #58CC02, #06b6d4);
+      
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #fb7185;
+      --info: #3b82f6;
+      
+      --border-light: rgba(255, 255, 255, 0.08);
+      --border-medium: rgba(255, 255, 255, 0.12);
+      
+      --shadow-sm: 0 2px 8px rgba(2, 6, 23, 0.4);
+      --shadow-md: 0 10px 30px rgba(2, 6, 23, 0.5);
+      --shadow-lg: 0 20px 50px rgba(2, 6, 23, 0.6);
+      --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 20px;
+      
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --spacing-2xl: 48px;
+      
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-base: 15px;
+      --font-size-lg: 17px;
+      --font-size-xl: 20px;
+      --font-size-2xl: 24px;
+      --font-size-3xl: 28px;
+      
+      --max-width: 1200px;
+    }
+    
+    /* Base Styles */
+    * {
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    body {
+      min-height: 100vh;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(92, 107, 192, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(88, 204, 2, 0.1) 0%, transparent 50%),
+        linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        linear-gradient(180deg, 
+          rgba(5, 6, 21, 0.8) 0%, 
+          rgba(7, 17, 39, 0.6) 50%,
+          rgba(5, 6, 21, 0.8) 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+    
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: var(--spacing-lg);
+    }
+    
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 700;
+      line-height: 1.3;
+      margin-top: 0;
+      color: var(--text-primary);
+    }
+    
+    h1 {
+      font-size: var(--font-size-2xl);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    h2 {
+      font-size: var(--font-size-xl);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    h3 {
+      font-size: var(--font-size-lg);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    h4 {
+      font-size: var(--font-size-base);
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    p {
+      margin-top: 0;
+      margin-bottom: var(--spacing-md);
+      color: var(--text-secondary);
+    }
+    
+    .text-meta {
+      color: var(--text-tertiary);
+      font-size: var(--font-size-sm);
+      line-height: 1.4;
+    }
+    
+    .text-small {
+      font-size: var(--font-size-sm);
+    }
+    
+    /* Header */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 1px solid var(--border-light);
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-lg);
+    }
+    
+    .logo {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-lg);
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #fff;
+      font-size: 28px;
+      box-shadow: var(--shadow-md);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .logo::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.1) 100%);
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-shrink: 0;
+    }
+    
+    /* Buttons & Links */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      background: var(--accent-gradient);
+      color: white;
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+      border: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: -1;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .btn:hover::before {
+      opacity: 1;
+    }
+    
+    .btn-secondary {
+      background: var(--glass-heavy);
+      color: var(--text-primary);
+      border: 1px solid var(--border-light);
+    }
+    
+    /* Layout - FIXED VERSION */
+    .layout-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .main-content-area {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: var(--spacing-xl);
+      align-items: start;
+      margin-bottom: var(--spacing-2xl);
+    }
+    
+    /* Full width sections that come after sidebar ends */
+    .full-width-section {
+      grid-column: 1 / -1;
+      width: 100%;
+      max-width: calc(var(--max-width) - 400px); /* Account for sidebar width */
+      margin: 0 auto;
+    }
+    
+    @media (max-width: 1024px) {
+      .main-content-area {
+        grid-template-columns: 1fr;
+      }
+      
+      .full-width-section {
+        max-width: 100%;
+      }
+    }
+    
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-light);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-medium);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .card-title {
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .card-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+      margin: var(--spacing-xl) 0;
+    }
+    
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-md);
+      margin: var(--spacing-lg) 0;
+    }
+    
+    .kpi-card {
+      background: var(--bg-overlay);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      border: 1px solid var(--border-light);
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-gradient);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .kpi-card:hover {
+      border-color: var(--border-medium);
+      transform: translateY(-4px);
+    }
+    
+    .kpi-card:hover::before {
+      opacity: 1;
+    }
+    
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      line-height: 1.2;
+      margin: var(--spacing-sm) 0;
+    }
+    
+    /* Tabs */
+    .tabs-container {
+      margin: var(--spacing-xl) 0;
+    }
+    
+    .tabs-header {
+      display: flex;
+      gap: var(--spacing-xs);
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: var(--spacing-lg);
+      flex-wrap: wrap;
+    }
+    
+    .tab {
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: var(--font-size-base);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .tab:hover {
+      color: var(--text-primary);
+      background: var(--glass);
+    }
+    
+    .tab.active {
+      color: var(--text-primary);
+      background: var(--glass-heavy);
+    }
+    
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 12px;
+      right: 12px;
+      height: 3px;
+      background: var(--accent-gradient);
+      border-radius: 3px 3px 0 0;
+    }
+    
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* AARRR Grid */
+    .aarrr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--spacing-md);
+    }
+    
+    .aarrr-card {
+      background: var(--bg-overlay);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      border-left: 4px solid var(--accent-primary);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .aarrr-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.02) 100%);
+      pointer-events: none;
+    }
+    
+    .aarrr-card:nth-child(2) {
+      border-left-color: var(--info);
+    }
+    
+    .aarrr-card:nth-child(3) {
+      border-left-color: var(--success);
+    }
+    
+    /* Funnel */
+    .funnel-container {
+      background: var(--bg-overlay);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      margin: var(--spacing-lg) 0;
+      border: 1px solid var(--border-light);
+    }
+    
+    .funnel-visual {
+      width: 100%;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: var(--spacing-lg) 0;
+    }
+    
+    .funnel-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--spacing-xl);
+      gap: var(--spacing-md);
+    }
+    
+    .funnel-step {
+      text-align: center;
+      flex: 1;
+      padding: var(--spacing-md);
+      background: var(--glass);
+      border-radius: var(--radius-md);
+      transition: transform 0.2s ease;
+    }
+    
+    .funnel-step:hover {
+      transform: translateY(-2px);
+      background: var(--glass-heavy);
+    }
+    
+    /* Retention Metrics */
+    .retention-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--spacing-md);
+      margin: var(--spacing-lg) 0;
+    }
+    
+    .retention-card {
+      background: var(--bg-overlay);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      text-align: center;
+      border: 1px solid var(--border-light);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .retention-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, 
+        var(--accent-primary) 0%,
+        var(--accent-secondary) 100%);
+      opacity: 0.7;
+    }
+    
+    .retention-card:nth-child(1)::before {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    
+    .retention-card:nth-child(2)::before {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+    
+    .retention-card:nth-child(3)::before {
+      background: linear-gradient(90deg, #f97316, #fb923c);
+    }
+    
+    .retention-card:nth-child(4)::before {
+      background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+    
+    .retention-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .retention-value {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+      margin: var(--spacing-sm) 0;
+    }
+    
+    .retention-card:nth-child(1) .retention-value {
+      background: linear-gradient(90deg, #10b981, #34d399);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .retention-card:nth-child(2) .retention-value {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .retention-card:nth-child(3) .retention-value {
+      background: linear-gradient(90deg, #f97316, #fb923c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .retention-card:nth-child(4) .retention-value {
+      background: linear-gradient(90deg, #ef4444, #f87171);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    /* Accordions */
+    .accordion {
+      margin: var(--spacing-lg) 0;
+    }
+    
+    .accordion-item {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-sm);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .accordion-item.active {
+      border-color: var(--border-medium);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .accordion-header {
+      padding: var(--spacing-lg);
+      background: var(--glass);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+    
+    .accordion-header:hover {
+      background: var(--glass-heavy);
+    }
+    
+    .accordion-header::after {
+      content: '+';
+      font-size: 20px;
+      font-weight: 300;
+      transition: transform 0.3s ease;
+    }
+    
+    .accordion-item.active .accordion-header::after {
+      content: '−';
+    }
+    
+    .accordion-content {
+      padding: 0 var(--spacing-lg);
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .accordion-item.active .accordion-content {
+      padding: var(--spacing-lg);
+      max-height: 500px;
+    }
+    
+    /* Recommendations Grid */
+    .recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--spacing-md);
+      margin: var(--spacing-lg) 0;
+    }
+    
+    .recommendation-card {
+      background: var(--bg-overlay);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      border: 1px solid var(--border-light);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .recommendation-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, 0.02) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .recommendation-card:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-4px);
+    }
+    
+    .recommendation-card:hover::before {
+      opacity: 1;
+    }
+    
+    .recommendation-category {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--accent-gradient);
+      color: white;
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      border-radius: 999px;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    /* Insights List */
+    .insights-list {
+      list-style: none;
+      padding: 0;
+      margin: var(--spacing-lg) 0;
+    }
+    
+    .insights-list li {
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-sm);
+      background: var(--bg-overlay);
+      border-radius: var(--radius-md);
+      border-left: 3px solid var(--info);
+      position: relative;
+      padding-left: calc(var(--spacing-lg) + 10px);
+      transition: transform 0.2s ease;
+    }
+    
+    .insights-list li:hover {
+      transform: translateX(4px);
+      background: var(--glass);
+    }
+    
+    .insights-list li::before {
+      content: '→';
+      position: absolute;
+      left: var(--spacing-sm);
+      color: var(--accent-primary);
+      font-weight: bold;
+    }
+    
+    /* Visuals Grid */
+    .visuals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--spacing-md);
+      margin: var(--spacing-lg) 0;
+    }
+    
+    .visual-placeholder {
+      background: var(--bg-overlay);
+      border-radius: var(--radius-md);
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed var(--border-light);
+      color: var(--text-tertiary);
+      text-align: center;
+      padding: var(--spacing-md);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .visual-placeholder::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(88, 204, 2, 0.05) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .visual-placeholder:hover {
+      border-color: var(--accent-primary);
+      background: var(--bg-secondary);
+      transform: translateY(-2px);
+    }
+    
+    .visual-placeholder:hover::before {
+      opacity: 1;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+      position: sticky;
+      top: var(--spacing-lg);
+    }
+    
+    .sidebar-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      border: 1px solid var(--border-light);
+      transition: transform 0.3s ease;
+    }
+    
+    .sidebar-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-medium);
+    }
+    
+    .quick-links {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+    
+    .quick-link {
+      display: block;
+      padding: var(--spacing-sm) var(--spacing-md);
+      background: var(--glass);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      text-align: center;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .quick-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .quick-link:hover {
+      background: var(--glass-heavy);
+      color: var(--text-primary);
+      transform: translateX(4px);
+    }
+    
+    .quick-link:hover::before {
+      left: 100%;
+    }
+    
+    .key-metrics {
+      list-style: none;
+      padding: 0;
+      margin: var(--spacing-md) 0 0 0;
+    }
+    
+    .key-metrics li {
+      padding: var(--spacing-sm) 0;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .key-metrics li:last-child {
+      border-bottom: none;
+    }
+    
+    .metric-value {
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    /* Project Sources Card */
+    .project-sources {
+      margin-top: var(--spacing-md);
+    }
+    
+    .source-links {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+    
+    .source-link {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-sm) var(--spacing-md);
+      background: var(--glass);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .source-link:hover {
+      background: var(--glass-heavy);
+      color: var(--text-primary);
+      transform: translateX(4px);
+    }
+    
+    .source-icon {
+      width: 20px;
+      text-align: center;
+      font-size: 18px;
+    }
+    
+    .source-text {
+      flex: 1;
+      font-size: var(--font-size-sm);
+    }
+    
+    /* Author Section */
+    .author-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+    
+    .author-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    
+    .author-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      flex-shrink: 0;
+    }
+    
+    .author-info {
+      flex: 1;
+    }
+    
+    .author-name {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin: 0 0 2px 0;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .author-title {
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+      margin: 0;
+    }
+    
+    .author-bio {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      font-size: var(--font-size-sm);
+      margin: 0;
+    }
+    
+    .author-links {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+    
+    .author-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--glass);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: var(--font-size-xs);
+      transition: all 0.3s ease;
+    }
+    
+    .author-link:hover {
+      background: var(--glass-heavy);
+      color: var(--text-primary);
+    }
+    
+    .link-icon {
+      font-size: 16px;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .author-link .link-icon {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    .author-link:hover .link-icon {
+      color: var(--accent-primary);
+      transform: translateY(-2px) scale(1.05);
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: var(--spacing-2xl);
+      padding-top: var(--spacing-xl);
+      border-top: 1px solid var(--border-light);
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: var(--font-size-sm);
+      background: var(--bg-overlay);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      margin-top: var(--spacing-2xl);
+    }
+    
+    /* Disclaimer Popup */
+    .disclaimer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .disclaimer-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .disclaimer-popup {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      position: relative;
+    }
+    
+    .disclaimer-overlay.active .disclaimer-popup {
+      transform: translateY(0);
+    }
+    
+    .disclaimer-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(88, 204, 2, 0.2), rgba(6, 182, 212, 0.2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto var(--spacing-md);
+      border: 2px solid var(--accent-primary);
+    }
+    
+    .disclaimer-title {
+      text-align: center;
+      margin-bottom: var(--spacing-md);
+      font-size: var(--font-size-lg);
+    }
+    
+    .disclaimer-content {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: var(--spacing-lg);
+      text-align: center;
+      font-size: var(--font-size-sm);
+    }
+    
+    .disclaimer-close {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: var(--font-size-sm);
+    }
+    
+    .disclaimer-close:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .main-content-area {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        position: static;
+        margin-top: var(--spacing-xl);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: var(--spacing-md);
+      }
+      
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      
+      .logo-container {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-md);
+      }
+      
+      .header-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .aarrr-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .retention-metrics {
+        grid-template-columns: 1fr;
+      }
+      
+      .recommendations-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .visuals-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .funnel-steps {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+      
+      .funnel-step {
+        padding: var(--spacing-md);
+      }
+      
+      .author-links {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Disclaimer Popup -->
+  <div class="disclaimer-overlay" id="disclaimerPopup">
+    <div class="disclaimer-popup">
+      <!-- Icon and title removed as requested -->
+      <div class="disclaimer-content">
+        This analysis uses fully synthetic data and is intended only to demonstrate my product analytics skills. It does not reflect real Duolingo user behavior or internal data.
+      </div>
+      <button class="disclaimer-close" id="closeDisclaimer">I Understand</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-container">
+        <div class="logo">DA</div>
+        <div>
+          <h1>Duolingo‑Style Product Analytics — AARRR Report</h1>
+          <p class="text-meta">Portfolio edition • Author: Navodya Jain • Synthetic dataset (10,000 users)</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a class="btn" href="#visuals">Power BI Visuals</a>
+        <a class="btn btn-secondary" href="#recommendations">Recommendations</a>
+      </div>
+    </header>
+
+    <!-- Main Layout Area -->
+    <div class="layout-wrapper">
+      <!-- Two-column section for main content + sidebar -->
+      <div class="main-content-area">
+        <!-- Main Content Column -->
+        <main>
+          <!-- Executive Summary -->
+          <section class="card">
+            <div class="card-header">
+              <div>
+                <p class="text-meta">Executive summary</p>
+                <h2 class="card-title">High-level story</h2>
+              </div>
+              <div class="text-meta">Project date: December 3, 2025</div>
+            </div>
+            
+            <p>This analysis uses users, sessions, lessons, retention and A/B test data to evaluate a Duolingo‑style product through the AARRR lens. Key problem: strong activation but steep early-week drop-off (D1 → D7). Experiment Variant B improved conversion and should be rolled out while monitoring retention and monetization signals.</p>
+            
+            <!-- Tabs Section -->
+            <div class="tabs-container">
+              <div class="tabs-header">
+                <button class="tab active" data-tab="aarrr">AARRR Overview</button>
+                <button class="tab" data-tab="funnel">Funnel Analysis</button>
+                <button class="tab" data-tab="ab">A/B Test Results</button>
+                <button class="tab" data-tab="churn">Churn Analysis</button>
+              </div>
+              
+              <!-- AARRR Tab -->
+              <div id="aarrr" class="tab-content active">
+                <div class="aarrr-grid">
+                  <div class="aarrr-card">
+                    <h4>Acquisition</h4>
+                    <p>Top countries: India, Philippines, Germany, France, Brazil, US, Mexico, Spain. Device spread: iOS / Web / Android nearly equal. Mobile-first product—prioritize app onboarding and OS-specific performance.</p>
+                  </div>
+                  <div class="aarrr-card">
+                    <h4>Activation</h4>
+                    <p>Activated users ≈ 9,000 (activation rate ≈ 90%). Avg lessons per user ≈ 6.1; Avg time spent ≈ 60.8 minutes. Strong first-touch value — optimize to convert the remaining ~10%.</p>
+                  </div>
+                  <div class="aarrr-card">
+                    <h4>Retention</h4>
+                    <p>Day1 = 60% • Day3 = 30% • Day7 = 20% • Day30 = 0% (synthetic-data artifact). Primary leakage occurs in first week, with 40% churn by Day 1 and 70% churn by Day 7.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Funnel Tab -->
+              <div id="funnel" class="tab-content">
+                <div class="funnel-container">
+                  <h4>User Funnel Analysis</h4>
+                  <div class="funnel-visual">
+                    <svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%; height:100%; background:transparent">
+                      <rect x="2" y="4" width="96" height="8" rx="3" fill="url(#gradient1)" opacity="0.9"></rect>
+                      <rect x="6" y="18" width="84" height="6" rx="3" fill="url(#gradient2)" opacity="0.9"></rect>
+                      <rect x="14" y="30" width="72" height="4" rx="3" fill="url(#gradient3)" opacity="0.9"></rect>
+                      <defs>
+                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" style="stop-color:#58CC02;stop-opacity:1" />
+                          <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                          <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                          <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </div>
+                  <div class="funnel-steps">
+                    <div class="funnel-step">
+                      <div><strong>Signups</strong></div>
+                      <div class="text-meta">10,000</div>
+                    </div>
+                    <div class="funnel-step">
+                      <div><strong>Activated</strong></div>
+                      <div class="text-meta">~9,000 (≈90%)</div>
+                    </div>
+                    <div class="funnel-step">
+                      <div><strong>Day 1 Active</div>
+                      <div class="text-meta">6,000 (60%)</div>
+                    </div>
+                    <div class="funnel-step">
+                      <div><strong>Day 7 Active</strong></div>
+                      <div class="text-meta">2,000 (20%)</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- A/B Test Tab -->
+              <div id="ab" class="tab-content">
+                <div class="card">
+                  <h4>A/B test — primary result</h4>
+                  <p>Control → 5.6% conversion • Variant B → 8.34% conversion • p-value &lt; 0.0001. Variant B shows ~48.9% relative lift. Recommendation: rollout Variant B and monitor retention & engagement for adverse effects.</p>
+                  
+                  <div class="card-divider"></div>
+                  
+                  <div style="display: grid; grid-template-columns: 1fr 320px; gap: var(--spacing-lg);">
+                    <div>
+                      <img src="figures/pbi_abtest.png" alt="A/B conversion bar chart" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    </div>
+                    <div>
+                      <div class="sidebar-card" style="margin-bottom: var(--spacing-md);">
+                        <strong>Stat test</strong>
+                        <p class="text-meta" style="margin-top: var(--spacing-xs);">t-test / proportion test used in notebook. p &lt; 0.0001 suggests statistical significance.</p>
+                      </div>
+                      <div class="sidebar-card">
+                        <strong>Checklist before full rollout</strong>
+                        <ul style="margin: var(--spacing-sm) 0 0 0; padding-left: var(--spacing-lg); color: var(--text-secondary);">
+                          <li>Check D7/D30 retention by variant</li>
+                          <li>Check engagement (lessons/day) for negative regressions</li>
+                          <li>Run geo-stratified analysis</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Churn Tab -->
+              <div id="churn" class="tab-content">
+                <div class="card">
+                  <h4>Churn analysis — key drivers</h4>
+                  <p>Churn peaks early: D1 churn ≈ 40% (complements 60% D1 retention). Logistic model (balanced) produced ~51.9% accuracy in synthetic data. Top actionable signals: streak length, XP, country, device (iOS better), language. Use these for targeted interventions.</p>
+                  
+                  <div class="accordion">
+                    <div class="accordion-item">
+                      <div class="accordion-header">Top churn segments</div>
+                      <div class="accordion-content">
+                        <p class="text-meta">Low streak users, users earning &lt;10 XP in first session, users in Hindi/Chinese language segments in this dataset, certain age groups (younger) show higher early churn.</p>
+                      </div>
+                    </div>
+                    <div class="accordion-item">
+                      <div class="accordion-header">Recommended model actions</div>
+                      <div class="accordion-content">
+                        <p class="text-meta">Add temporal features (recency/frequency), rolling XP, session intervals. Try tree-based models + SHAP for feature explainability.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          <!-- Detailed AARRR Deep-Dive -->
+          <section class="card" style="margin-top: var(--spacing-xl);">
+            <h3>Detailed AARRR Deep‑Dive</h3>
+            
+            <div class="aarrr-grid" style="margin-top: var(--spacing-lg);">
+              <div class="aarrr-card">
+                <h4>Acquisition — where users come from</h4>
+                <p class="text-meta">Top countries: India, Philippines, Germany, France, Brazil, US, Mexico, Spain. Age groups concentrated under 34. Device split shows a mobile-first audience where iOS users retain slightly better on average.</p>
+              </div>
+              
+              <div class="aarrr-card">
+                <h4>Activation — how users reach moment of value</h4>
+                <p class="text-meta">Activation metric used: completion of at least one lesson on Day 1. Activated users ≈ 9k (≈90% of signups). Behaviors correlated with activation: first‑session XP & lesson completion speed. Bottlenecks: 10% fail to complete first lesson — simplify UX and add immediate reward to reduce friction.</p>
+              </div>
+              
+              <div class="aarrr-card">
+                <h4>Retention — cohort & segment patterns</h4>
+                <p class="text-meta">Day1 = 60%, Day3 = 30%, Day7 = 20%, Day30 = 0% (synthetic artifact). Retention strongest in Germany, Spain, Indonesia; web users show slightly better D1 retention. Primary drop: D1→D3 (30% loss). Opportunity: targeted Day3 nudges and micro-goals for first week.</p>
+              </div>
+              
+              <div class="aarrr-card">
+                <h4>Revenue proxies & high‑value users</h4>
+                <p class="text-meta">High-value proxies: sustained streaks, top XP decile, high lessons/day. Use these to seed trial offers and lookalike audiences for paid acquisition.</p>
+              </div>
+              
+              <div class="aarrr-card">
+                <h4>Referral / Viral potential</h4>
+                <p class="text-meta">Referral is not measured directly. Infer referrers as users with high Day30 retention and long streaks. Recommend social share cards + small referral incentives tied to streak milestones.</p>
+              </div>
+            </div>
+          </section>
+        </main>
+        
+        <!-- Sidebar Column -->
+        <aside class="sidebar">
+          <div class="sidebar-card">
+            <p class="text-meta">Quick links</p>
+            <div class="quick-links">
+              <a class="quick-link" href="#executive-summary">Executive Summary</a>
+              <a class="quick-link" href="#visuals">Power BI Visuals</a>
+              <a class="quick-link" href="#recommendations">Recommendations</a>
+              <a class="quick-link" href="#author">About Author</a>
+            </div>
+          </div>
+          
+          <div class="sidebar-card">
+            <p class="text-meta">Key notebook outputs</p>
+            <ul class="key-metrics">
+              <li><span>DAU</span><span class="metric-value">188.81</span></li>
+              <li><span>WAU</span><span class="metric-value">826</span></li>
+              <li><span>MAU</span><span class="metric-value">2353.2</span></li>
+              <li><span>Day1 Retention</span><span class="metric-value">60%</span></li>
+              <li><span>Day3 Retention</span><span class="metric-value">30%</span></li>
+              <li><span>Day7 Retention</span><span class="metric-value">20%</span></li>
+              <li><span>Day30 Retention</span><span class="metric-value">0%</span></li>
+              <li><span>A/B: Control</span><span class="metric-value">5.6%</span></li>
+              <li><span>A/B: Variant B</span><span class="metric-value">8.34%</span></li>
+              <li><span>p-value</span><span class="metric-value">&lt; 0.0001</span></li>
+            </ul>
+          </div>
+          
+          <!-- Project Sources Card -->
+          <div class="sidebar-card">
+            <p class="text-meta">Project Sources</p>
+            <div class="source-links">
+              <a href="https://github.com/Iamnavodyajain/duolingo-analytics" target="_blank" rel="noopener noreferrer" class="source-link">
+                <span class="source-icon">📓</span>
+                <span class="source-text">Jupyter Notebook</span>
+              </a>
+              <a href="https://drive.google.com/drive/folders/1ehh0VbKwD2po6XywFRyYAzxyUf8q-Pbs?usp=drive_link" target="_blank" rel="noopener noreferrer" class="source-link">
+                <span class="source-icon">📊</span>
+                <span class="source-text">Power BI Dashboard (Drive)</span>
+              </a>
+              <a href="https://drive.google.com/drive/folders/1GBFx5xx7tr1WhLqKO_xTIA1m6MFWDf2A?usp=drive_link" target="_blank" rel="noopener noreferrer" class="source-link">
+                <span class="source-icon">📁</span>
+                <span class="source-text">Datasets (Drive)</span>
+              </a>
+              <a href="https://drive.google.com/drive/folders/1E1DDJX9B5UFKRR1S3MDAw0lv3OI1OvWK?usp=drive_link" target="_blank" rel="noopener noreferrer" class="source-link">
+                <span class="source-icon">📄</span>
+                <span class="source-text">Report (Drive)</span>
+              </a>
+            </div>
+          </div>
+          
+          <div class="sidebar-card">
+            <p class="text-meta">Shareable snippets</p>
+            <div class="snippet">
+              "Variant B improved conversion from 5.6% → 8.34% (p &lt; 0.0001). Rollout recommended."
+            </div>
+          </div>
+          
+        </aside>
+      </div> <!-- End of two-column section -->
+      
+      <!-- Full-width sections that come AFTER the sidebar ends -->
+      <!-- These are centered and take full width -->
+      <div class="full-width-section">
+        <!-- Recommendations -->
+        <section id="recommendations" class="card" style="margin-top: var(--spacing-xl);">
+          <h3>Recommendations — Practical & prioritized</h3>
+          
+          <div class="recommendations-grid">
+            <div class="recommendation-card">
+              <div class="recommendation-category">Acquisition</div>
+              <p>Focus ads & localization in PH, MX, DE; create language-targeted creatives for Hindi/Spanish learners.</p>
+            </div>
+            
+            <div class="recommendation-card">
+              <div class="recommendation-category">Activation</div>
+              <p>Simplify the first lesson (1–2 minutes), add immediate XP/gem reward and visual progress indicator; nudge users who sign up but don't complete first lesson within 20–30 minutes.</p>
+            </div>
+            
+            <div class="recommendation-card">
+              <div class="recommendation-category">Retention</div>
+              <p>Implement Day3 & Day7 re-engagement flows with tailored content and micro-rewards (3-day streak badge); A/B test content timing.</p>
+            </div>
+            
+            <div class="recommendation-card">
+              <div class="recommendation-category">Revenue opportunities</div>
+              <p>Target premium trials to users with streak ≥7 or top XP decile; test gated advanced lessons and seasonal promo bundles.</p>
+            </div>
+            
+            <div class="recommendation-card">
+              <div class="recommendation-category">Experiments</div>
+              <p>Test personalized lesson recommendations vs generic; test subtle pricing experiments for trial conversion in high-value segments.</p>
+            </div>
+            
+            <div class="recommendation-card">
+              <div class="recommendation-category">Churn reduction</div>
+              <p>Introduce streak-protection tokens, recovery nudges, and language-specific onboarding tweaks for churn-prone cohorts.</p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Insights -->
+        <section class="card" style="margin-top: var(--spacing-xl);">
+          <h3>Insights — short, shareable bullets</h3>
+          
+          <ul class="insights-list">
+            <li>Mobile-first audience; prioritize app onboarding and OS performance tuning.</li>
+            <li>Activation is strong (~90%) — focus on converting the remaining ~10% with micro‑UX fixes.</li>
+            <li>Primary leakage: 40% churn by Day 1, 70% churn by Day 7 — implement Day3/Day7 re-engagement sequences.</li>
+            <li>High XP & streak users are the best candidates for premium offers.</li>
+            <li>Variant B shows ~48.9% lift; rollout but monitor retention & monetization.</li>
+            <li>Localization (Hindi/Spanish/Chinese) can reduce churn for specific cohorts.</li>
+            <li>Use behavioral signals to seed lookalike audiences for paid acquisition.</li>
+            <li>Design experiments to test personalization; measure lift on D7 and D30, not just conversion.</li>
+            <li>Consider a "streak-first" campaign to drive habit formation in early week.</li>
+          </ul>
+        </section>
+        
+        <!-- Power BI Visuals -->
+        <section id="visuals" class="card" style="margin-top: var(--spacing-xl);">
+          <h3>Power BI Visuals</h3>
+          
+          <div class="visuals-grid">
+            <div>
+              <h4 style="margin-bottom: var(--spacing-md);">Count of Users by Country</h4>
+              <img src="figures/pbi_users_by_country.png" alt="Count of users by country" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+            </div>
+            <div>
+              <h4 style="margin-bottom: var(--spacing-md);">Activation KPI Tiles</h4>
+              <img src="figures/pbi_activation_tiles.png" alt="Activation KPI tiles" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+            </div>
+            <div>
+              <h4 style="margin-bottom: var(--spacing-md);">Retention Line Chart</h4>
+              <img src="figures/pbi_retention_line.png" alt="Retention line chart" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+            </div>
+            <div>
+              <h4 style="margin-bottom: var(--spacing-md);">XP & Streak Distribution</h4>
+              <img src="figures/pbi_xp_streak.png" alt="XP histogram / Streak distribution" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+            </div>
+            <div>
+              <h4 style="margin-bottom: var(--spacing-md);">A/B Test Results</h4>
+              <img src="figures/pbi_abtest.png" alt="A/B test bar chart" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+            </div>
+            <div>
+              <h4 style="margin-bottom: var(--spacing-md);">Churn Decomposition Tree</h4>
+              <img src="figures/pbi_churn_tree.png" alt="Churn decomposition tree" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+            </div>
+          </div>
+        </section>
+      </div> <!-- End of full-width sections -->
+      
+      <!-- Author Section -->
+      <div class="full-width-section">
+        <section id="author" class="card" style="margin-top: var(--spacing-xl);">
+          <h3 style="margin-top: 0; margin-bottom: var(--spacing-xl);">About the Analyst</h3>
+          
+          <div class="author-section">
+            <div class="author-header">
+              <div class="author-avatar">NJ</div>
+              <div class="author-info">
+                <h4 class="author-name">Navodya Jain</h4>
+                <p class="author-title">Product Analyst | Data Storyteller</p>
+              </div>
+            </div>
+            
+            <p class="author-bio">
+              I transform complex user behavior data into actionable product insights. Passionate about the AARRR framework, experimentation, and building data-driven product strategies that drive growth and retention.
+            </p>
+            
+            <div class="author-links">
+              <a href="https://github.com/Navodya-Jain" target="_blank" rel="noopener noreferrer" class="author-link">
+                <i class="fab fa-github link-icon" aria-hidden="true"></i>
+                <span>GitHub</span>
+              </a>
+              <a href="https://www.linkedin.com/in/navodya-jain" target="_blank" rel="noopener noreferrer" class="author-link">
+                <i class="fab fa-linkedin-in link-icon" aria-hidden="true"></i>
+                <span>LinkedIn</span>
+              </a>
+              <a href="https://yourportfolio.com" target="_blank" rel="noopener noreferrer" class="author-link">
+                <i class="fas fa-globe link-icon" aria-hidden="true"></i>
+                <span>Portfolio</span>
+              </a>
+              <a href="mailto:navodya.jain@example.com" class="author-link">
+                <i class="fas fa-envelope link-icon" aria-hidden="true"></i>
+                <span>Email</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </div> <!-- End of author section -->
+    </div> <!-- End of layout wrapper -->
+    
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="text-meta" style="margin: 0;">Duolingo-Style Product Analytics Report • December 2025</p>
+      <p class="text-meta" style="margin: var(--spacing-xs) 0 0 0; font-size: 12px;">Built with data analysis, Python, Power BI & strategic insights</p>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Tab functionality
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.getAttribute('data-tab');
+          
+          // Remove active class from all tabs and contents
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+          
+          // Add active class to clicked tab and corresponding content
+          tab.classList.add('active');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Accordion functionality
+      const accordionItems = document.querySelectorAll('.accordion-item');
+      
+      accordionItems.forEach(item => {
+        const header = item.querySelector('.accordion-header');
+        
+        header.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          
+          // Close all accordions first
+          accordionItems.forEach(otherItem => {
+            otherItem.classList.remove('active');
+          });
+          
+          // If it wasn't active, open it
+          if (!isActive) {
+            item.classList.add('active');
+          }
+        });
+      });
+      
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            const headerOffset = 100;
+            const elementPosition = targetElement.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+      
+      // Add subtle parallax effect to background on scroll
+      let lastScrollY = window.scrollY;
+      window.addEventListener('scroll', () => {
+        const scrolled = window.scrollY;
+        const parallaxElement = document.body;
+        const rate = scrolled * 0.5;
+        
+        parallaxElement.style.backgroundPositionY = `calc(30% + ${rate * 0.1}px)`;
+        lastScrollY = scrolled;
+      });
+      
+      // Disclaimer Popup functionality
+      const disclaimerPopup = document.getElementById('disclaimerPopup');
+      const closeDisclaimer = document.getElementById('closeDisclaimer');
+      
+      // Show disclaimer after 5 seconds
+      setTimeout(() => {
+        disclaimerPopup.classList.add('active');
+      }, 5000);
+      
+      // Close disclaimer when button is clicked
+      closeDisclaimer.addEventListener('click', () => {
+        disclaimerPopup.classList.remove('active');
+      });
+      
+      // Close disclaimer when clicking outside the popup
+      disclaimerPopup.addEventListener('click', (e) => {
+        if (e.target === disclaimerPopup) {
+          disclaimerPopup.classList.remove('active');
+        }
+      });
+      
+      // Close disclaimer with Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && disclaimerPopup.classList.contains('active')) {
+          disclaimerPopup.classList.remove('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
